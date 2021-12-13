@@ -1,2 +1,7 @@
 Steps
-	- docker build -t test3-py .
+
+Remove/Build image "orders-img" with Python3, Flask, SQLite3
+	docker rmi orders-img; docker build -t orders-img .
+
+Remove/Create and Run container "orders-cont" in interactive mode, remap Flask port 5000 to 6800
+	docker rm orders-cont; docker run -it --name orders-cont --publish 6080:5000 orders-img
