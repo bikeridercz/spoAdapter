@@ -1,0 +1,2 @@
+Steps
+	- docker build -t test3-py .
