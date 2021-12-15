@@ -1,7 +1,35 @@
-Steps
+Steps to install
+================
 
 Remove/Build image "orders-img" with Python3, Flask, SQLite3
 	docker rmi orders-img; docker build -t orders-img .
 
-Remove/Create and Run container "orders-cont" in interactive mode, remap Flask port 5000 to 6800
-	docker rm orders-cont; docker run -it --name orders-cont --publish 6080:5000 orders-img
+Remove/Create and Run container "orders-cont" in interactive or detached mode, remap Flask port 5000 to 6800 (Port 5000 is already used on MacOS)
+	docker rm orders-cont; docker run --detach --name orders-cont --publish 6080:5000 orders-img
+	docker rm orders-cont; docker run --interactive --tty --name orders-cont --publish 6080:5000 orders-img
+
+Rebuild all
+	docker rm orders-cont; docker rmi orders-img; docker build -t orders-img .; docker rm orders-cont; docker run --interactive --tty --name orders-cont --publish 6080:5000 orders-img
+
+Connect to container' shell
+===========================
+Run bash session in running container
+	docker exec --interactive --tty orders-cont /bin/bash
+
+
+Testing
+=======
+Get detail to all Orders
+	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders
+
+Get detail to Order[orderId:1]
+	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders/1
+
+Create a new Order
+	curl -X POST -H "Content-Type: application/json" -d '{"consumerOrderId": "CETIN-000004", "note": "Čtvrtá objednávka z CETIN"}' http://localhost:6080/api/orders/add
+
+Update existing Order
+	curl -X PUT -H "Content-Type: application/json" -d '{"id": "4", "consumerOrderId": "CETIN-000004", "note": "Čtvrtá"}' http://localhost:6080/api/orders/update
+
+Delete Order
+	curl -X DELETE -H "Content-Type: application/json" -d '{"id": "4"}' http://localhost:6080/api/orders/delete/4

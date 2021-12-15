@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y sqlite3
 WORKDIR /code
 
 # copy the dependencies file to the working directory
-COPY pip-modules	 .
+COPY pip-module-list .
 
 # install dependencies
-RUN pip install -r pip-modules
+RUN pip install -r pip-module-list
 
 # copy the content of the local src directory to the working directory
 COPY src/ .
