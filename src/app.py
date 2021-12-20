@@ -1,11 +1,19 @@
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, jsonify, render_template
 from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
 #app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-app.config['JSON_AS_ASCII'] = False
+app.config['JSON_AS_ASCII'] = False #Přepíná mezi UTF-8 a českými znaky
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+class OrderResponse:
+    def __init__(self, statusCode = -99, statusCodeDescription = 'Unknown error', responseData = None):
+        self.statusCode = statusCode
+        self.statusCodeDescription = statusCodeDescription
+        if responseData is None:
+            responseData = []
+        self.responseData = responseData
 
 def get_connection():
     con = sqlite3.connect('orders.sqlite3')
@@ -29,7 +37,7 @@ def get_order(order_id):
     return order
 
 def get_orders():
-    orders = []
+    responseData = []
     try:
         con = get_connection()
         cur = con.cursor()
@@ -40,12 +48,14 @@ def get_orders():
             order['id'] = row['id']
             order['consumerOrderId'] = row['consumer_order_id']
             order['note'] = row['note']
-            orders.append(order)
-    except:
-        orders = []
+            responseData.append(order)
+    except Exception as e:
+        r = OrderResponse(statusCode = -1, statusCodeDescription = e, responseData = None)
     finally:
         con.close()
-    return orders
+
+    r = OrderResponse(statusCode = 0, statusCodeDescription = None, responseData = responseData)
+    return r
 
 def get_new_order_id():
     id = -1
@@ -107,7 +117,13 @@ def hello():
 @app.route('/api/orders', methods=['GET'])
 def api_get_orders():
     #return jsonify(get_orders())
-    return {'body': get_orders(), 'message': 'This endpoint returns a list of all Orders', 'method': request.method}
+    response = get_orders()
+    return {'header': {'statusCode': response.statusCode, 'statusCodeDescription': response.statusCodeDescription, 'method': request.method}, 'body': response.responseData}
+
+@app.route('/page/orders', methods=['GET'])
+def page_get_orders():
+    response = get_orders()
+    return render_template('orders.html', data = response)
 
 @app.route('/api/orders/<order_id>', methods=['GET'])
 def api_get_order(order_id):

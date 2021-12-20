@@ -1,0 +1,15 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if data %}
+    <h1>Orders {{ name }}</h1>
+    <table border="1">
+    <caption>seznam objednávek</caption>
+    {% for i in data.responseData %}
+        <tr>
+            <td>{{ i.id }}</td>
+            <td>{{ i.consumerOrderId }}</td>
+            <td>{{ i.note }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
