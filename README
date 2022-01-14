@@ -17,19 +17,31 @@ Run bash session in running container
 	docker exec --interactive --tty orders-cont /bin/bash
 
 
-Testing
-=======
+cURL's
+======
 Get detail to all Orders
 	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders
 
 Get detail to Order[orderId:1]
 	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders/1
 
-Create a new Order
+Create a new Order as a REST call
 	curl -X POST -H "Content-Type: application/json" -d '{"consumerOrderId": "CETIN-000004", "note": "Čtvrtá objednávka z CETIN"}' http://localhost:6080/api/orders/add
+
+Create a new Order as a HTML FORM POSTed data
+	curl -X POST -H "Content-type: multipart/form-data" -d '{"consumerOrderId": "CETIN-000004", "note": "Čtvrtá objednávka z CETIN"}' http://localhost:6080/api/orders/add
 
 Update existing Order
 	curl -X PUT -H "Content-Type: application/json" -d '{"id": "4", "consumerOrderId": "CETIN-000004", "note": "Čtvrtá"}' http://localhost:6080/api/orders/update
 
 Delete Order
 	curl -X DELETE -H "Content-Type: application/json" -d '{"id": "4"}' http://localhost:6080/api/orders/delete/4
+
+Pages
+=====
+/
+	root welcome page
+/api/orders
+	overview of all API methods side by side with testing c/URL's with the same output as from cURL call
+/page/orders
+	HTML page with list of all orders

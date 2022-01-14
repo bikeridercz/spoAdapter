@@ -1,0 +1,60 @@
+{% include 'header.html.jinja' %}
+
+<title>API overview</title>
+    <h1>API overview</h1>
+    <table border="1">
+    <caption>list of APIs and API invocation samples</caption>
+        <tr>
+            <th>Link/Button</th>
+            <th>cURL</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>
+		<a href="{{ url_for('api_get_orders') }}">{{ url_for('api_get_orders') }}</a>
+	    </td>
+            <td><code>curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders</code></td>
+            <td>used to get a list of all Orders</td>
+        </tr>
+        <tr>
+            <td>
+		<a href="{{ url_for('api_get_order', order_id=1) }}">{{ url_for('api_get_order', order_id=1) }}</a>
+	    </td>
+            <td><code>curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders/1</code></td>
+            <td>used to get a detail of Order with orderId=1</td>
+        </tr>
+        <tr>
+            <td>
+		<form method="POST" id="create_order_form" action="{{ url_for('api_add_order') }}">
+			<input type="text" name="consumerOrderId" value="CETIN-00000x"/> 
+			<input type="text" name="note" value="Další objednávka z CETIN"/> 
+			<input type="submit" value="Create">
+		</form>
+	    </td>
+            <td><code>
+		curl -X POST -H "Content-Type: application/json" -d '{"consumerOrderId": "CETIN-00000x", "note": "Další nová objednávka z CETIN"}' http://localhost:6080/api/orders/add<br>
+		curl -X POST -H "Content-type: multipart/form-data" -d '{"consumerOrderId": "CETIN-00000x", "note": "Další nová objednávka z CETIN"}' http://localhost:6080/api/orders/add
+		</code>
+	    </td>
+            <td>used to add a new Order via a REST<br>or HTLM FORM</td>
+        </tr>
+        <tr>
+            <td>TBD</td>
+            <td><code>curl -X PUT -H "Content-Type: application/json" -d '{"id": "4", "consumerOrderId": "CETIN-000004", "note": "Čtvrtá"}' http://localhost:6080/api/orders/update</code></td>
+            <td>used to update existing Order attributes</td>
+        </tr>
+        <tr>
+            <td>
+		<form method="POST" id="delete_order_form" action="{{ url_for('api_delete_order') }}">
+			<input type="text" name="id" value="5"/> 
+			<input type="submit" value="Delete">
+		</form>
+		or<br>
+		<a href="{{ url_for('api_delete_order', order_id=5) }}">{{ url_for('api_delete_order', order_id=5) }}</a>
+	    </td>
+            <td><code>curl -X DELETE -H "Content-Type: application/json" -d '{"order_id": "5"}' http://localhost:6080/api/orders/delete</code></td>
+            <td>used to delete the Order with orderId=5</td>
+        </tr>
+    </table>
+
+{% include 'footer.html.jinja' %}

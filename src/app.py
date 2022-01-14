@@ -1,6 +1,6 @@
-from flask import Flask, request, Response, jsonify, render_template
+from flask import Flask, request, Response, jsonify, json, render_template
 from flask_cors import CORS
-import sqlite3
+import flask, sqlite3, datetime
 
 app = Flask(__name__)
 #app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -30,6 +30,7 @@ def get_order(order_id):
         order['id'] = row['id']
         order['consumerOrderId'] = row['consumer_order_id']
         order['note'] = row['note']
+        order['datetime'] = row['datetime']
     except:
         order = {}
     finally:
@@ -48,6 +49,7 @@ def get_orders():
             order['id'] = row['id']
             order['consumerOrderId'] = row['consumer_order_id']
             order['note'] = row['note']
+            order['datetime'] = row['datetime']
             responseData.append(order)
     except Exception as e:
         r = OrderResponse(statusCode = -1, statusCodeDescription = e, responseData = None)
@@ -69,15 +71,15 @@ def get_new_order_id():
         id = -1
     finally:
         con.close()
-    return id 
+    return id
 
 def add_order(order):
     id = get_new_order_id()
     try:
         con = get_connection()
         cur = con.cursor()
-        cur.execute('insert into b2b_order (id, consumer_order_id, note) values (?, ?, ?)',
-            (id, order['consumerOrderId'], order['note']))
+        cur.execute('insert into b2b_order (id, consumer_order_id, note, datetime) values (?, ?, ?, datetime(\'now\'))',
+            (id, order['consumerOrderId'], order['note'])) #datetime.datetime.now().strftime("%d.%m.%Y-%H:%M:%S")))
         con.commit()
     except:
         con().rollback()
@@ -114,6 +116,10 @@ def delete_order(order_id):
 def hello():
    return 'Test application is ready to be tested on <b>/api/orders</b> URL !'
 
+@app.route('/api', methods=['GET'])
+def api_common():
+    return render_template('api.html.jinja')
+
 @app.route('/api/orders', methods=['GET'])
 def api_get_orders():
     #return jsonify(get_orders())
@@ -123,7 +129,7 @@ def api_get_orders():
 @app.route('/page/orders', methods=['GET'])
 def page_get_orders():
     response = get_orders()
-    return render_template('orders.html', data = response)
+    return render_template('orders.html.jinja', data = response)
 
 @app.route('/api/orders/<order_id>', methods=['GET'])
 def api_get_order(order_id):
@@ -132,8 +138,16 @@ def api_get_order(order_id):
 
 @app.route('/api/orders/add', methods=['POST'])
 def api_add_order():
-    order = request.get_json()
-    new_order = add_order(order)
+    content_type = request.headers.get('Content-Type')
+    if (content_type == 'application/json'):
+        order = request.get_json()
+        new_order = add_order(order)
+    elif (content_type in ('application/x-www-form-urlencoded', 'multipart/form-data')):
+        form = request.form
+        order = {'consumerOrderId': form['consumerOrderId'], 'note': form['note']}
+        new_order = add_order(order)
+    else:
+        return 'Content-Type not supported: ' + content_type
     #return jsonify(add_order(order))
     return {'body': new_order, 'message': 'This endpoint creates the new Order[orderId:{}]'.format(new_order['id']), 'method': request.method}
 
@@ -143,8 +157,13 @@ def api_update_order():
     updated_order = update_order(order)
     return {'body': updated_order, 'message': 'This endpoint updates existing Order[orderId:{}]'.format(updated_order['id']), 'method': request.method}
 
-@app.route('/api/orders/delete/<order_id>', methods=['DELETE'])
+@app.route('/api/orders/delete', defaults={'order_id': None}, methods=['GET', 'POST']) #GET, POST jsou povoleny jen kvůli volání z informační stránky URL=localhost://6080/api
+@app.route('/api/orders/delete/<order_id>', methods=['DELETE']) #Určeno pro volání REST (curl)
 def api_delete_order(order_id):
+    if flask.request.method == 'POST':
+        order_id = request.form['id']
+    if order_id == None:
+        return flask.abort(Response('Error: order_id nebylo vlozeno !'))
     removed_order_id = delete_order(order_id)
     return {'body': removed_order_id, 'message': 'This endpoint removes existing Order[orderId:{}]'.format(removed_order_id), 'method': request.method}
 
