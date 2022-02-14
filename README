@@ -1,47 +1,20 @@
 Steps to install
 ================
 
-Remove/Build image "orders-img" with Python3, Flask, SQLite3
-	docker rmi orders-img; docker build -t orders-img .
-
-Remove/Create and Run container "orders-cont" in interactive or detached mode, remap Flask port 5000 to 6800 (Port 5000 is already used on MacOS)
-	docker rm orders-cont; docker run --detach --name orders-cont --publish 6080:5000 orders-img
-	docker rm orders-cont; docker run --interactive --tty --name orders-cont --publish 6080:5000 orders-img
+Warning - default server port 5000 was remapped to 6080 !!!
 
 Rebuild all
-	docker rm orders-cont; docker rmi orders-img; docker build -t orders-img .; docker rm orders-cont; docker run --interactive --tty --name orders-cont --publish 6080:5000 orders-img
+	docker rm spo-adapter-cont; docker rmi spo-adapter-img; docker build -t spo-adapter-img .; docker rm spo-adapter-cont; docker run --interactive --tty --name spo-adapter-cont --publish 6080:5000 spo-adapter-img
 
 Connect to container' shell
 ===========================
 Run bash session in running container
-	docker exec --interactive --tty orders-cont /bin/bash
-
-
-cURL's
-======
-Get detail to all Orders
-	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders
-
-Get detail to Order[orderId:1]
-	curl -X GET -H "Content-Type: application/json" http://localhost:6080/api/orders/1
-
-Create a new Order as a REST call
-	curl -X POST -H "Content-Type: application/json" -d '{"consumerOrderId": "CETIN-000004", "note": "Čtvrtá objednávka z CETIN"}' http://localhost:6080/api/orders/add
-
-Create a new Order as a HTML FORM POSTed data
-	curl -X POST -H "Content-type: multipart/form-data" -d '{"consumerOrderId": "CETIN-000004", "note": "Čtvrtá objednávka z CETIN"}' http://localhost:6080/api/orders/add
-
-Update existing Order
-	curl -X PUT -H "Content-Type: application/json" -d '{"id": "4", "consumerOrderId": "CETIN-000004", "note": "Čtvrtá"}' http://localhost:6080/api/orders/update
-
-Delete Order
-	curl -X DELETE -H "Content-Type: application/json" -d '{"id": "4"}' http://localhost:6080/api/orders/delete/4
+	docker exec --interactive --tty spo-adapter-cont /bin/bash
 
 Pages
 =====
-/
-	root welcome page
-/api/orders
-	overview of all API methods side by side with testing c/URL's with the same output as from cURL call
-/page/orders
-	HTML page with list of all orders
+http://localhost:6080/page/newFolder
+
+cURL's
+======
+curl -X POST -H "Content-Type: application/json" -d '{"ticketId": "TICKET011", "ticketType": "Nemovitosti CETIN nájemce", "ticketSubtype": "Pronájem do 10.000 Kč", "partnerId": "Česká pošta s.p.", "createdBy": "x0561517@cetin.cz"}' http://localhost:6080/api/folder/add

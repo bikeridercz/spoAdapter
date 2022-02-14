@@ -1,0 +1,27 @@
+{% include 'header.html.jinja' %}
+
+<title>SharepointOnline Adapter Demo</title>
+    <h1>SharepointOnline Adapter Demo</h1>
+    <table border="1">
+        <tr>
+            <td>create folder via REST API</td>
+            <td><code>	curl -X POST -H "Content-Type: application/json" -d '{"ticketId": "TICKET011", "ticketType": "Nemovitosti CETIN nájemce", "ticketSubtype": "Pronájem do 10.000 Kč", "partnerId": "Česká pošta s.p.", "createdBy": "x0561517@cetin.cz"}' http://localhost:6080/api/folder/add</code></td>
+        </tr>
+        <tr>
+            <td>create folder via HTML Form</td>
+            <td>
+		<form method="POST" id="create_folder_form" action="{{ url_for('api_add_folder') }}">
+			<table>
+				<tr><td>Ticket ID</td><td><input type="text" name="ticketId" value=""/></<td></tr>
+				<tr><td>Ticket Type</td><td><input type="text" name="ticketType" value=""/></<td></tr>
+				<tr><td>Ticket Subtype</td><td><input type="text" name="ticketSubtype" value=""/></<td></tr>
+				<tr><td>Partner ID</td><td><input type="text" name="partnerId" value=""/></<td></tr>
+				<tr><td>Created by</td><td><input type="text" name="createdBy" value=""/></<td></tr>
+				<tr><td></td><td><input type="submit" value="Create Folder"></td></tr>
+			</table>
+		</form>
+	    </td>
+        </tr>
+    </table>
+
+{% include 'footer.html.jinja' %}
