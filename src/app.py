@@ -11,25 +11,56 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False #Přepíná mezi UTF-8 a českými znaky
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-def add_folder(folder):
+def get_folder(siteId, folderId):
     context = ClientContext(config['site_abs_path']).with_credentials(UserCredential(config['username'], config['password']))
-    target_folder = config['folder_root_abs_path'] + '/' + folder['ticketId']
 
     try:
-        folder = context.web.get_folder_by_server_relative_url(config['folder_root_rel_path'] + '/' + folder['ticketId']).get().execute_query()
-        if folder.exists:
-            response = {'resultCode': '-1', 'resultDescription': 'Error: folder already exists', 'folderUrl': target_folder}
-            return response
+        folder = context.web.get_folder_by_server_relative_url(config['folder_root_rel_path'] + '/' + folderId).get().execute_query()
+
+        result = 0
+        resultCode = 'Success'
+        resultDescription = 'Folder exists'
+
+        fields = folder.list_item_all_fields.execute_query()
+        fields.get().execute_query()
+        folderDetails = {'folderUrl': folder._build_full_url(folder.serverRelativeUrl), 'ticketType': fields.get_property('TicketType',''), 'ticketSubtype': fields.get_property('TicketSubtype',''), 'partnerId': fields.get_property('Partner',''), 'responsiblePerson': fields.get_property('Responsible','')} 
+        return {'result': result, 'resultCode': resultCode, 'resultDescription': resultDescription, 'folderDetails': folderDetails}
+        
+    except ClientRequestException:
+        result = -1
+        resultCode = 'Error'
+        resultDescription = 'Folder does not exists'
+
+    return {'result': result, 'resultCode': resultCode, 'resultDescription': resultDescription, 'folderDetails': None}
+
+def add_folder(folderAttributes):
+    folderUrl = None
+    folder = None
+    context = ClientContext(config['site_abs_path']).with_credentials(UserCredential(config['username'], config['password']))
+
+    try:
+        folder = context.web.get_folder_by_server_relative_url(config['folder_root_rel_path'] + '/' + folderAttributes['ticketId']).get().execute_query()
     except ClientRequestException:
         pass
-    except Exception as e:
-            response = {'resultCode': '-99', 'resultDescription': 'Error: ' + str(e), 'folderUrl': target_folder}
-            return response
-    
-    folder = context.web.folders.add(target_folder).execute_query() #+ ' - ' + folder['ticket_name'] + ' - ' + folder['partner_name'])
 
-    response = {'resultCode': '0', 'resultDescription': 'Success: Folder created successfuly', 'folderUrl': target_folder}
-    return response
+    if folder and folder.exists:
+        result = 1
+        resultCode = 'Warning'
+        resultDescription = 'Folder already exists'
+    else:
+        result = 0
+        resultCode = 'Success'
+        resultDescription = 'Folder created successfuly'
+        folder = context.web.folders.add(config['folder_root_abs_path'] + '/' + folderAttributes['ticketId']).execute_query()
+        fields = folder.list_item_all_fields.execute_query()
+        fields.set_property('TicketType', folderAttributes['ticketType'])
+        fields.set_property('TicketSubtype', folderAttributes['ticketSubtype'])
+        fields.set_property('Partner', folderAttributes['partnerId']).update()
+        fields.set_property('Responsible', folderAttributes['responsiblePerson']).update().execute_query()
+
+    folderUrl = folder._build_full_url(folder.serverRelativeUrl)
+
+    return {'result': result, 'resultCode': resultCode, 'resultDescription': resultDescription, 'folderUrl': folderUrl}
 
 @app.route('/')
 def hello():
@@ -39,6 +70,11 @@ def hello():
 def api_common():
     return render_template('newFolder.html.jinja')
 
+@app.route('/api/folder/<folder_id>', methods=['GET'])
+def api_get_order(folder_id):
+    return jsonify(get_folder('APD', folder_id))
+    #return {'body': get_order(order_id), 'message': 'This endpoint returns details of the Order[orderId:{}]'.format(order_id), 'method': request.method}
+
 @app.route('/api/folder/add', methods=['POST'])
 def api_add_folder():
     content_type = request.headers.get('Content-Type')
@@ -47,8 +83,8 @@ def api_add_folder():
         response = add_folder(folder)
     elif (content_type in ('application/x-www-form-urlencoded', 'multipart/form-data')):
         form = request.form
-        folder = {'ticketId': form['ticketId'], 'ticketType': form['ticketType'], 'ticketSubtype': form['ticketSubtype'], 'partnerId': form['partnerId'], 'createdBy': form['createdBy']}
-        response = add_folder(folder)
+        folderAttributes = {'ticketId': form['ticketId'], 'ticketType': form['ticketType'], 'ticketSubtype': form['ticketSubtype'], 'partnerId': form['partnerId'], 'responsiblePerson': form['responsiblePerson']}
+        response = add_folder(folderAttributes)
     else:
         return 'Content-Type not supported: ' + content_type
     #return jsonify(add_order(order))

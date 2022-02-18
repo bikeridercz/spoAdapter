@@ -5,7 +5,7 @@
     <table border="1">
         <tr>
             <td>create folder via REST API</td>
-            <td><code>	curl -X POST -H "Content-Type: application/json" -d '{"ticketId": "TICKET011", "ticketType": "Nemovitosti CETIN nájemce", "ticketSubtype": "Pronájem do 10.000 Kč", "partnerId": "Česká pošta s.p.", "createdBy": "x0561517@cetin.cz"}' http://localhost:6080/api/folder/add</code></td>
+            <td><code>	curl -X POST -H "Content-Type: application/json" -d '{"ticketId": "TICKET011", "ticketType": "Nemovitosti CETIN nájemce", "ticketSubtype": "Pronájem do 10.000 Kč", "partnerId": "Česká pošta s.p.", "responsiblePerson": "Kazda Ondřej"}' http://localhost:6080/api/folder/add</code></td>
         </tr>
         <tr>
             <td>create folder via HTML Form</td>
@@ -16,7 +16,7 @@
 				<tr><td>Ticket Type</td><td><input type="text" name="ticketType" value=""/></<td></tr>
 				<tr><td>Ticket Subtype</td><td><input type="text" name="ticketSubtype" value=""/></<td></tr>
 				<tr><td>Partner ID</td><td><input type="text" name="partnerId" value=""/></<td></tr>
-				<tr><td>Created by</td><td><input type="text" name="createdBy" value=""/></<td></tr>
+				<tr><td>Responsible person</td><td><input type="text" name="responsiblePerson" value=""/></<td></tr>
 				<tr><td></td><td><input type="submit" value="Create Folder"></td></tr>
 			</table>
 		</form>
