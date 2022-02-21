@@ -23,3 +23,14 @@ curl -X GET http://localhost:6080/api/folder/TICKET003
 
 Direct call of SPO REST API (NOT WORKING !!!)
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'client_id=d2fcf993-929b-4c32-a235-a7ba643d4338&client_secret=ddd&scope=https://graph.microsoft.com/.default&grant_type=client_credentials' https://login.microsoftonline.com/czcetin.onmicrosoft.com/oauth2/v2.0/token
+
+Powershell authentication
+=========================
+pwsh
+Install-Module PnP.PowerShell
+Import-Module PnP.PowerShell
+$clientConn = Connect-PnPOnline -ClientId "d2fcf993-929b-4c32-a235-a7ba643d4338" -CertificatePath apd_self_signed.pfx -CertificatePassword (ConvertTo-SecureString -AsPlainText "nechutne21DlouheHeslo" -Force) -Url "https://czcetin.sharepoint.com/sites/APD" -Tenant czcetin.onmicrosoft.com -ReturnConnection
+Get-PnPFolderItem -FolderSiteRelativeUrl "Dokumenty"
+Get-PnPFolder -Url "/Dokumenty/TICKET003"
+Get-PnPField -List "/Dokumenty/TICKET003" -Identity "TicketType"
+
